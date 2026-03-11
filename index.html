@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【溧马】服务包线下执行SOP交互手册</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Professional Neutrals with Action Accents (Slate, Blue, Emerald, Red, Purple) -->
+    <!-- Application Structure Plan: The SPA is structured as an interactive training and execution manual for offline booth staff. It uses a "Dashboard/Explorer" layout rather than a static chart. 1) An interactive 'Zone-based' SOP explorer allows staff to click through their physical work areas. 2) A 'User Journey' toggle compares Reserved vs Unreserved users side-by-side. 3) A 'Data & Package' section uses visual charts. 4) NEW: A 'C-End Product Flow' interactive timeline to show what the user experiences on their phone, bridging offline/online context. 5) A prominent 'Red Lines' section highlights critical rules. -->
+    <!-- Visualization & Content Choices: 1. Goal: Inform on Zone Tasks -> Viz: Interactive Tabbed Cards (HTML/CSS/JS). 2. Goal: Compare User Types -> Viz: Side-by-Side Flex Layout with Toggle (HTML/JS). 3. Goal: Inform on Package/Traffic -> Viz: Doughnut & Pie Charts (Chart.js). 4. NEW: Goal: Explain C-End App Flow -> Viz: Interactive Step Progress Bar & Dynamic Content Panels (HTML/CSS/JS) -> Justification: Allows staff to simulate the user's phone experience step-by-step without overwhelming them with text. -> Library: Vanilla JS + Tailwind. NO SVG/Mermaid. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 30vh;
+            max-height: 300px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+                max-height: 350px;
+            }
+        }
+        .nav-button.active {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        .step-btn {
+            transition: all 0.2s ease;
+        }
+        .step-btn.active {
+            background-color: #7c3aed; /* Purple-600 */
+            color: white;
+            border-color: #7c3aed;
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.2);
+        }
+        .step-btn:not(.active) {
+            background-color: #f8fafc;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+        .step-btn:not(.active):hover {
+            border-color: #a78bfa;
+            background-color: #faf5ff;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="antialiased pb-20">
+
+    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">溧马服务包展位 <span class="text-blue-600">SOP 执行手册</span></h1>
+            <div class="text-sm font-medium px-3 py-1 bg-blue-100 text-blue-800 rounded-full">内部培训与现场参考专用</div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <section id="overview" class="bg-white rounded-xl shadow-sm p-6 sm:p-8 border border-slate-200">
+            <h2 class="text-xl font-bold text-slate-800 mb-4 border-l-4 border-blue-600 pl-3">项目全景与执行目标</h2>
+            <p class="text-slate-600 leading-relaxed text-lg">
+                本交互手册旨在指导【溧马】线下展位工作人员的现场接待与转化标准作业流程。我们的核心业务逻辑是通过线下【AI跑姿检测】作为体验入口，引导用户最终支付 199元 购买综合服务包。本手册分解了各个物理区域的工作流，明确了关键话术，并严格规避了财务退款与客诉风险。请全体执行人员熟练掌握。
+            </p>
+        </section>
+
+        <section id="interactive-sop" class="space-y-6">
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-5">
+                <h2 class="text-xl font-bold text-blue-900 mb-2">一、 分区动态执行手册 (Interactive Zone Guide)</h2>
+                <p class="text-blue-800 mb-0">
+                    请点击下方不同的展区标签，查看您所在区域的具体职责、标准动作、用户动线以及关键话术。每个区域的执行规范相互衔接，共同促成最终的订单转化与安全交付。
+                </p>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="md:w-1/3 flex flex-col gap-3" id="zone-nav">
+                    <button data-zone="stage1" class="nav-button active w-full text-left px-5 py-4 rounded-lg border-2 border-slate-200 bg-white font-semibold text-slate-700 transition-all hover:border-blue-300 hover:bg-slate-50 flex items-center justify-between">
+                        <span>阶段一：迎宾与分流区</span>
+                        <span class="text-lg">▶</span>
+                    </button>
+                    <div class="text-center text-slate-400 font-bold">⬇</div>
+                    <button data-zone="stage2" class="nav-button w-full text-left px-5 py-4 rounded-lg border-2 border-slate-200 bg-white font-semibold text-slate-700 transition-all hover:border-blue-300 hover:bg-slate-50 flex items-center justify-between">
+                        <span>阶段二：AI专区 (体验)</span>
+                        <span class="text-lg">▶</span>
+                    </button>
+                    <div class="text-center text-slate-400 font-bold">⬇</div>
+                    <button data-zone="stage3" class="nav-button w-full text-left px-5 py-4 rounded-lg border-2 border-slate-200 bg-white font-semibold text-slate-700 transition-all hover:border-blue-300 hover:bg-slate-50 flex items-center justify-between">
+                        <span>阶段三：信用卡摊位 (收银)</span>
+                        <span class="text-lg">▶</span>
+                    </button>
+                    <div class="text-center text-slate-400 font-bold">⬇</div>
+                    <button data-zone="stage4" class="nav-button w-full text-left px-5 py-4 rounded-lg border-2 border-slate-200 bg-white font-semibold text-slate-700 transition-all hover:border-blue-300 hover:bg-slate-50 flex items-center justify-between">
+                        <span>阶段四：物料与权益交付区</span>
+                        <span class="text-lg">▶</span>
+                    </button>
+                </div>
+
+                <div class="md:w-2/3 bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8 min-h-[400px]" id="zone-content-container">
+                    <div id="content-stage1" class="zone-content fade-in block">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold">1</span>
+                            <h3 class="text-2xl font-bold text-slate-800">迎宾与分流区</h3>
+                        </div>
+                        <p class="text-slate-600 mb-6 font-medium">目标：快速识别用户身份，精准发放标识并引导至对应体验区。</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                <h4 class="font-bold text-amber-800 mb-2 border-b border-amber-200 pb-2">针对：预约用户 (已预付99元)</h4>
+                                <ul class="list-disc pl-5 text-amber-900 space-y-2 text-sm">
+                                    <li>询问并核验身份名单 (限量100人)。</li>
+                                    <li>发放 <strong class="bg-amber-200 px-1 rounded">VIP标识</strong> 或凭证贴纸。</li>
+                                    <li>引导用户直接进入【AI专区】进行体验。</li>
+                                </ul>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                <h4 class="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-2">针对：未预约用户 (自然客流)</h4>
+                                <ul class="list-disc pl-5 text-slate-700 space-y-2 text-sm">
+                                    <li>主动破冰迎客。</li>
+                                    <li><strong class="text-blue-600">话术抛饵：</strong>“您好！了解一下199元溧马全套护航包，包含免费AI跑姿检测等8项赛事权益，欢迎到前面体验！”</li>
+                                    <li>引导用户进入【AI专区】。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="content-stage2" class="zone-content fade-in hidden">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold">2</span>
+                            <h3 class="text-2xl font-bold text-slate-800">【AI专区】体验与转化</h3>
+                        </div>
+                        <p class="text-slate-600 mb-6 font-medium">目标：通过设备体验建立专业信任，为后续199元服务包的销售逼单做铺垫。</p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                                <div class="text-2xl mt-1">🏃‍♂️</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">动作 1：跑姿检测</h4>
+                                    <p class="text-slate-600 text-sm mt-1">引导所有来到展位的用户上机，配合完成 AI 跑姿数据的采集与检测。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4 bg-red-50 p-4 rounded-lg border border-red-200 shadow-sm">
+                                <div class="text-2xl mt-1">⚠️</div>
+                                <div>
+                                    <h4 class="font-bold text-red-800">动作 2：结果留存与关键逼单 (防客诉重点)</h4>
+                                    <div class="mt-2 text-sm space-y-2">
+                                        <p class="line-through text-slate-500">错误话术：检测是免费的，但拿报告要交199元买套餐。</p>
+                                        <p class="text-red-900 font-medium bg-red-100 p-2 rounded border border-red-200">
+                                            ✅ 正确执行话术：“您的跑姿数据已经生成了！这个报告是我们【199元溧马赛事专享包】的核心权益之一。请前往前面的【信用卡摊位】办理专享包，不仅能解锁详细报告，还能领走实体赛事背包、补剂等全套服务。”
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                                <div class="text-2xl mt-1">👉</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">动作 3：动线引导</h4>
+                                    <p class="text-slate-600 text-sm mt-1">将完成检测且有意向的用户，引导至【信用卡】摊位进行收银。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="content-stage3" class="zone-content fade-in hidden">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold">3</span>
+                            <h3 class="text-2xl font-bold text-slate-800">【信用卡摊位】收银与核销</h3>
+                        </div>
+                        <p class="text-slate-600 mb-6 font-medium">目标：算清账目，完成收款与退款（如有），避免财务混乱。必须依靠用户标识进行判断。</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-emerald-50 border-2 border-emerald-500 rounded-lg p-4 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">带VIP标识</div>
+                                <h4 class="font-bold text-emerald-900 mb-3 text-lg">处理：预约用户</h4>
+                                <ol class="list-decimal pl-5 text-emerald-800 space-y-3 font-medium">
+                                    <li>引导用户现场支付 <strong class="text-xl">199元</strong>。</li>
+                                    <li class="bg-emerald-100 p-2 rounded">核实其预付记录，现场操作原路退回预付的 <strong class="text-xl text-red-600">99元</strong>。</li>
+                                    <li>完成收银，指引前往交付区。</li>
+                                </ol>
+                                <p class="text-xs text-emerald-600 mt-3">* 注：用户实际总支出为199元。</p>
+                            </div>
+
+                            <div class="bg-slate-50 border-2 border-slate-300 rounded-lg p-4 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-slate-400 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">无标识</div>
+                                <h4 class="font-bold text-slate-800 mb-3 text-lg">处理：未预约用户</h4>
+                                <ol class="list-decimal pl-5 text-slate-700 space-y-3 font-medium">
+                                    <li>引导用户现场直接支付 <strong class="text-xl text-blue-600">199元</strong> 或 <strong class="text-xl text-blue-600">办理浦发信用卡</strong>。</li>
+                                    <li class="bg-red-50 text-red-700 p-2 rounded border border-red-200 flex items-center gap-2">
+                                        <span>⛔</span> 绝无退款动作，严禁退款！
+                                    </li>
+                                    <li>完成收银，指引前往交付区。</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="content-stage4" class="zone-content fade-in hidden">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold">4</span>
+                            <h3 class="text-2xl font-bold text-slate-800">物料与权益交付区</h3>
+                        </div>
+                        <p class="text-slate-600 mb-6 font-medium">目标：凭收银结账凭证，统一发放199元溧马服务包，确保实体物料当面点清，线上权益引导激活无遗漏。</p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-4">
+                                <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                    <span class="text-xl">🎒</span> 实体物料包 (当面交付)
+                                </h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded">
+                                        <span>定制背包</span> <span class="font-bold">× 1</span>
+                                    </li>
+                                    <li class="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded">
+                                        <span>完赛/定制冰箱贴</span> <span class="font-bold">× 1</span>
+                                    </li>
+                                    <li class="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded">
+                                        <span>迈胜补剂</span> <span class="font-bold">× 1 份</span>
+                                    </li>
+                                    <li class="flex items-center justify-between text-sm text-red-700 bg-red-50 p-2 rounded border border-red-100 font-bold">
+                                        <span>汗液检测贴纸 (易漏)</span> <span>× 1</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 shadow-sm rounded-lg p-4">
+                                <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                    <span class="text-xl">📱</span> 线上权益包 (扫码/宣传册)
+                                </h4>
+                                <ul class="space-y-2">
+                                    <li class="text-sm text-blue-700 bg-blue-50 p-2 rounded border border-blue-100 font-medium">
+                                        解锁 AI 跑姿检测报告
+                                    </li>
+                                    <li class="text-sm text-slate-700 bg-slate-50 p-2 rounded">
+                                        提供汗液检测使用指南
+                                    </li>
+                                    <li class="text-sm text-slate-700 bg-slate-50 p-2 rounded">
+                                        激活 PM 会员卡
+                                    </li>
+                                    <li class="text-sm text-slate-700 bg-slate-50 p-2 rounded">
+                                        获取影像预售资格
+                                    </li>
+                                    <li class="text-sm text-slate-700 bg-slate-50 p-2 rounded">
+                                        加入/激活“备赛搭子”服务
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="user-journey" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mt-8">
+            <div class="bg-slate-800 p-5">
+                <h2 class="text-xl font-bold text-white">二、 用户动线图谱比对 (User Journey Comparison)</h2>
+                <p class="text-slate-300 text-sm mt-1">此视图可帮助收银与现场督导人员清晰对比两类用户的不同账务处理路径，防止错乱。</p>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex justify-center mb-6">
+                    <div class="inline-flex bg-slate-100 rounded-lg p-1">
+                        <button id="btn-journey-a" class="px-6 py-2 rounded-md bg-white shadow-sm text-blue-700 font-bold text-sm transition-colors">查看：预约用户动线</button>
+                        <button id="btn-journey-b" class="px-6 py-2 rounded-md text-slate-500 font-bold text-sm hover:text-slate-700 transition-colors">查看：未预约用户动线</button>
+                    </div>
+                </div>
+
+                <div id="journey-a" class="flex flex-col sm:flex-row items-center justify-between gap-4 fade-in">
+                    <div class="w-full sm:w-1/5 bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
+                        <div class="text-xs text-amber-600 font-bold mb-1">起点</div>
+                        <div class="font-bold text-slate-800">已预付 99元</div>
+                        <div class="text-xs text-slate-500 mt-1">限量100人名单内</div>
+                    </div>
+                    <div class="text-slate-300 font-bold text-2xl hidden sm:block">➔</div>
+                    <div class="text-slate-300 font-bold text-2xl sm:hidden">⬇</div>
+                    <div class="w-full sm:w-1/5 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                        <div class="text-xs text-blue-600 font-bold mb-1">互动</div>
+                        <div class="font-bold text-slate-800">AI 跑姿检测</div>
+                        <div class="text-xs text-slate-500 mt-1">话术引导转化</div>
+                    </div>
+                    <div class="text-slate-300 font-bold text-2xl hidden sm:block">➔</div>
+                    <div class="text-slate-300 font-bold text-2xl sm:hidden">⬇</div>
+                    <div class="w-full sm:w-1/5 bg-emerald-50 border-2 border-emerald-400 rounded-lg p-4 text-center relative shadow-md">
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">关键核销</div>
+                        <div class="text-xs text-emerald-700 font-bold mb-1 mt-2">收银</div>
+                        <div class="font-bold text-slate-800 text-base leading-tight">支付 199元 /<br>办理浦发信用卡</div>
+                        <div class="text-xs text-red-600 font-bold mt-1 bg-red-100 rounded inline-block px-1">退回 99元</div>
+                    </div>
+                    <div class="text-slate-300 font-bold text-2xl hidden sm:block">➔</div>
+                    <div class="text-slate-300 font-bold text-2xl sm:hidden">⬇</div>
+                    <div class="w-full sm:w-1/5 bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                        <div class="text-xs text-purple-600 font-bold mb-1">终点</div>
+                        <div class="font-bold text-slate-800">交付服务包</div>
+                        <div class="text-xs text-slate-500 mt-1">实物 + 虚拟权益</div>
+                    </div>
+                </div>
+
+                <div id="journey-b" class="flex flex-col sm:flex-row items-center justify-between gap-4 fade-in hidden">
+                    <div class="w-full sm:w-1/5 bg-slate-100 border border-slate-300 rounded-lg p-4 text-center">
+                        <div class="text-xs text-slate-500 font-bold mb-1">起点</div>
+                        <div class="font-bold text-slate-800">自然客流</div>
+                        <div class="text-xs text-slate-500 mt-1">无任何预付记录</div>
+                    </div>
+                    <div class="text-slate-300 font-bold text-2xl hidden sm:block">➔</div>
+                    <div class="text-slate-300 font-bold text-2xl sm:hidden">⬇</div>
+                    <div class="w-full sm:w-1/5 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                        <div class="text-xs text-blue-600 font-bold mb-1">互动</div>
+                        <div class="font-bold text-slate-800">AI 跑姿检测</div>
+                        <div class="text-xs text-slate-500 mt-1">抛饵引导转化</div>
+                    </div>
+                    <div class="text-slate-300 font-bold text-2xl hidden sm:block">➔</div>
+                    <div class="text-slate-300 font-bold text-2xl sm:hidden">⬇</div>
+                    <div class="w-full sm:w-1/5 bg-slate-50 border border-slate-300 rounded-lg p-4 text-center relative">
+                        <div class="text-xs text-slate-600 font-bold mb-1">收银</div>
+                        <div class="font-bold text-blue-700 text-base leading-tight">直接支付 199元 /<br>办理浦发信用卡</div>
+                        <div class="text-xs text-slate-500 mt-1 border-t border-slate-200 pt-1 mt-1">无退款环节</div>
+                    </div>
+                    <div class="text-slate-300 font-bold text-2xl hidden sm:block">➔</div>
+                    <div class="text-slate-300 font-bold text-2xl sm:hidden">⬇</div>
+                    <div class="w-full sm:w-1/5 bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                        <div class="text-xs text-purple-600 font-bold mb-1">终点</div>
+                        <div class="font-bold text-slate-800">交付服务包</div>
+                        <div class="text-xs text-slate-500 mt-1">实物 + 虚拟权益</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="data-insights" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-lg font-bold text-slate-800 mb-2">三、 199元服务包价值构成</h2>
+                <p class="text-sm text-slate-500 mb-6">了解产品结构，有助于在【AI专区】进行逼单转化时向用户清晰传达产品价值。服务包包含9项核心权益。</p>
+                <div class="chart-container">
+                    <canvas id="packageChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-lg font-bold text-slate-800 mb-2">四、 预估展位客流与订单占比</h2>
+                <p class="text-sm text-slate-500 mb-6">根据当前数据，预约名额已锁定，现场绝大部分接待任务和转化重点在于自然流量（未预约用户）。</p>
+                <div class="chart-container">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 新增模块：《备赛搭子》C端线上核心主流程 -->
+        <section id="c-end-flow" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mt-8 p-6 sm:p-8">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-slate-800 border-l-4 border-purple-600 pl-3">五、《备赛搭子》C端线上核心主流程</h2>
+                <p class="text-slate-600 mt-2 text-sm">此部分展示用户扫码后在手机端经历的完整产品交互流程。线下督导需熟悉此流程，以便在【AI专区】和【交付区】准确指导用户操作手机，打通“线下体验-线上转化”的闭环。</p>
+            </div>
+
+            <!-- 横向步骤导航 -->
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-2 mb-8 relative">
+                <div class="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -z-10 transform -translate-y-1/2"></div>
+                
+                <button data-cstep="1" class="c-step-btn step-btn active w-full lg:w-auto px-4 py-3 border-2 rounded-lg font-bold text-sm lg:text-xs xl:text-sm z-10 flex flex-col items-center justify-center min-w-[140px]">
+                    <span class="mb-1 text-lg">📱</span>
+                    <span>1. 赛事主页触达</span>
+                </button>
+                <div class="lg:hidden text-slate-300 font-bold">⬇</div>
+                
+                <button data-cstep="2" class="c-step-btn step-btn w-full lg:w-auto px-4 py-3 border-2 rounded-lg font-bold text-sm lg:text-xs xl:text-sm z-10 flex flex-col items-center justify-center min-w-[140px]">
+                    <span class="mb-1 text-lg">📝</span>
+                    <span>2. 基础能力评估</span>
+                </button>
+                <div class="lg:hidden text-slate-300 font-bold">⬇</div>
+
+                <button data-cstep="3" class="c-step-btn step-btn w-full lg:w-auto px-4 py-3 border-2 rounded-lg font-bold text-sm lg:text-xs xl:text-sm z-10 flex flex-col items-center justify-center min-w-[140px]">
+                    <span class="mb-1 text-lg">🔗</span>
+                    <span>3. 检测</span>
+                </button>
+                <div class="lg:hidden text-slate-300 font-bold">⬇</div>
+
+                <button data-cstep="4" class="c-step-btn step-btn w-full lg:w-auto px-4 py-3 border-2 rounded-lg font-bold text-sm lg:text-xs xl:text-sm z-10 flex flex-col items-center justify-center min-w-[140px]">
+                    <span class="mb-1 text-lg">💳</span>
+                    <span>4. 付费/兑换核销</span>
+                </button>
+                <div class="lg:hidden text-slate-300 font-bold">⬇</div>
+
+                <button data-cstep="5" class="c-step-btn step-btn w-full lg:w-auto px-4 py-3 border-2 rounded-lg font-bold text-sm lg:text-xs xl:text-sm z-10 flex flex-col items-center justify-center min-w-[140px]">
+                    <span class="mb-1 text-lg">🎁</span>
+                    <span>5. 获取专属锦囊</span>
+                </button>
+            </div>
+
+            <!-- 动态内容展示面板 -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-8 min-h-[350px]">
+                
+                <!-- Step 1 Content -->
+                <div id="c-content-1" class="c-step-content fade-in block">
+                    <h3 class="text-xl font-bold text-purple-800 mb-3 border-b border-purple-200 pb-2">赛事信息与权益聚合页（起点）</h3>
+                    <p class="text-slate-600 mb-4 text-sm">页面定位：用户进入特定赛事（如：1219北京石景山马拉松）的专属主页，也是备赛服务的统一控制台。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                            <h4 class="font-bold text-slate-800 mb-2">📌 核心模块展示</h4>
+                            <ul class="list-disc pl-5 text-slate-700 text-sm space-y-2">
+                                <li><strong class="text-slate-800">赛事基础信息：</strong>时间、地点、类型。</li>
+                                <li><strong class="text-purple-600">科学备赛服务（核心卖点）：</strong>展示“AI跑姿分析”与“科学补给策略”。<br><span class="text-xs text-slate-500">注：此时呈“待检测/待解锁”状态，旨在制造用户预期。</span></li>
+                                <li><strong class="text-slate-800">其他权益（生态合作）：</strong>展示飞跑影像券、PaceMate 会员等，提升锦囊整体价值感。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-100 flex flex-col justify-center">
+                            <h4 class="font-bold text-blue-900 mb-2">👆 核心交互动作</h4>
+                            <p class="text-blue-800 text-sm">引导用户点击底部的 <strong class="bg-blue-600 text-white px-2 py-1 rounded">完善备赛信息</strong> 或 <strong class="bg-blue-600 text-white px-2 py-1 rounded">解锁查看备赛锦囊</strong> 按钮，正式触发信息采集流程 (Onboarding)。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 Content -->
+                <div id="c-content-2" class="c-step-content fade-in hidden">
+                    <h3 class="text-xl font-bold text-purple-800 mb-3 border-b border-purple-200 pb-2">能力评估阶段 (Onboarding 3步曲)</h3>
+                    <p class="text-slate-600 mb-4 text-sm">页面定位：通过轻量化的问卷，构建用户基础运动画像。采用分步表单（3步）降低用户的填写疲劳感。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 relative">
+                            <div class="absolute -top-3 left-4 bg-slate-800 text-white text-xs font-bold px-2 py-1 rounded">第 1 步</div>
+                            <h4 class="font-bold text-slate-800 mb-2 mt-2">生理特征</h4>
+                            <ul class="text-slate-600 text-sm space-y-1">
+                                <li>• 性别</li>
+                                <li>• 年龄</li>
+                                <li>• 身高</li>
+                                <li>• 体重</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 relative border-l-4 border-l-orange-400">
+                            <div class="absolute -top-3 left-4 bg-slate-800 text-white text-xs font-bold px-2 py-1 rounded">第 2 步</div>
+                            <h4 class="font-bold text-slate-800 mb-2 mt-2">履历与伤病史</h4>
+                            <ul class="text-slate-600 text-sm space-y-1">
+                                <li>• 近期最好成绩 (全/半马/10K)</li>
+                                <li>• 月跑量 & 跑龄</li>
+                                <li class="text-orange-700 font-medium bg-orange-50 p-1 rounded mt-1">⚠️ 既往运动损伤 (无/膝/踝/髋)<br><span class="text-xs text-orange-600">直接影响后续跑姿战术建议</span></li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 relative">
+                            <div class="absolute -top-3 left-4 bg-slate-800 text-white text-xs font-bold px-2 py-1 rounded">第 3 步</div>
+                            <h4 class="font-bold text-slate-800 mb-2 mt-2">赛事目标</h4>
+                            <ul class="text-slate-600 text-sm space-y-1">
+                                <li>• 目标类型 (安全完赛/刷新成绩)</li>
+                                <li>• 计划完赛时间</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 Content -->
+                <div id="c-content-3" class="c-step-content fade-in hidden">
+                    <h3 class="text-xl font-bold text-purple-800 mb-2 border-b border-purple-200 pb-2">核心生物数据采集阶段</h3>
+                    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded text-sm mb-4 inline-block font-medium">
+                        💡 逻辑规则：跑姿与汗液检测完成任意一项即可跳过进入下一步（降低转化门槛，保证漏斗转化率）。
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 子模块 A -->
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                            <h4 class="font-bold text-blue-700 mb-2 flex items-center gap-2"><span>🏃</span> 子模块 A：跑姿检测</h4>
+                            <p class="text-sm text-slate-600 mb-3"><strong class="text-slate-800">场景：</strong>引导用户前往线下展位（如：B3展位）完成上机测试。</p>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200 text-sm">
+                                <strong class="text-slate-800">交互动作：</strong><br>
+                                用户在手机端输入 <span class="bg-white px-1 border border-slate-300 rounded font-mono">参赛号</span> 和 <span class="bg-white px-1 border border-slate-300 rounded font-mono">手机号(+验证码)</span>，直接提取线下的 AI 测试数据。
+                            </div>
+                        </div>
+
+                        <!-- 子模块 B -->
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                            <h4 class="font-bold text-emerald-700 mb-2 flex items-center gap-2"><span>💧</span> 子模块 B：汗液检测</h4>
+                            <p class="text-sm text-slate-600 mb-3"><strong class="text-slate-800">场景：</strong>用户完成佩戴汗液贴的跑步训练后进行数据回传。</p>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-200 text-sm space-y-2">
+                                <p><strong class="text-slate-800">交互动作：</strong></p>
+                                <ul class="list-disc pl-4 text-slate-600">
+                                    <li><strong class="text-slate-700">图像识别：</strong>拍照上传显色汗液贴（含重拍/报错提示校验）。</li>
+                                    <li><strong class="text-slate-700">运动上下文：</strong>补充运动时长、强度(轻松/节奏/竞技)。</li>
+                                    <li><strong class="text-slate-700">环境数据：</strong>授权地理位置(结合温湿度分析出汗量)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <span class="bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded">出口</span>
+                        <p class="text-sm text-slate-700 mt-1">点击 <strong class="text-blue-600">「提交，生成备赛锦囊」</strong>，系统拦截并触发支付墙 (Paywall)。</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 Content -->
+                <div id="c-content-4" class="c-step-content fade-in hidden">
+                    <h3 class="text-xl font-bold text-purple-800 mb-3 border-b border-purple-200 pb-2">商业化收银台 (Paywall)</h3>
+                    <p class="text-slate-600 mb-4 text-sm">页面定位：在用户投入了大量时间成本和数据后，顺理成章弹出的付费解锁环节。线下督导需在此环节指导用户完成操作。</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-6 justify-center mt-6">
+                        <div class="bg-white border-2 border-blue-500 rounded-xl p-6 text-center shadow-md w-full sm:w-1/2 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">主推路径</div>
+                            <div class="text-3xl mb-2">💰</div>
+                            <h4 class="font-bold text-slate-800 text-lg mb-2">直接支付</h4>
+                            <div class="text-3xl font-black text-blue-600 mb-2">¥ 199</div>
+                            <p class="text-sm text-slate-500">微信 / 支付宝 直接唤起支付完成购买</p>
+                        </div>
+                        
+                        <div class="text-slate-400 font-bold text-xl flex items-center justify-center">或</div>
+
+                        <div class="bg-white border-2 border-emerald-500 rounded-xl p-6 text-center shadow-md w-full sm:w-1/2">
+                            <div class="text-3xl mb-2">🎟️</div>
+                            <h4 class="font-bold text-slate-800 text-lg mb-2">权益兑换核销</h4>
+                            <div class="text-lg font-bold text-emerald-600 mb-2">输入专属兑换码</div>
+                            <p class="text-sm text-slate-500">为B2B2C合作（如：浦发信用卡办理用户、赞助商采购）留出的免费核销通道</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5 Content -->
+                <div id="c-content-5" class="c-step-content fade-in hidden">
+                    <h3 class="text-xl font-bold text-purple-800 mb-3 border-b border-purple-200 pb-2">专属备赛锦囊（核心交付物）</h3>
+                    <p class="text-slate-600 mb-4 text-sm">页面定位：用户付费后获得的高价值、可执行的赛前指导报告。页面顶部包含两个核心 Tab 切换视图。</p>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Tab 1 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="bg-blue-600 text-white px-4 py-2 font-bold flex justify-between items-center">
+                                <span>Tab 1：科学补给策略</span>
+                                <span class="text-xs bg-blue-800 px-2 py-1 rounded">基于汗液检测</span>
+                            </div>
+                            <div class="p-4 space-y-3">
+                                <div class="text-sm border-b border-slate-100 pb-2">
+                                    <strong class="text-slate-800">用户标签：</strong> 汗液代谢水平(如:平衡低汗型)、预计完赛时间。
+                                </div>
+                                <div class="text-sm border-b border-slate-100 pb-2">
+                                    <strong class="text-slate-800">赛道全景解析：</strong> 结合GPS轨迹与海拔爬升图，高亮关键赛段 (如 KM2.3-KM4.1 爬升警示)。
+                                </div>
+                                <div class="bg-blue-50 p-3 rounded text-sm">
+                                    <strong class="text-blue-900 block mb-1">⏱️ 时间轴补给清单 (核心亮点)</strong>
+                                    <ul class="text-slate-700 space-y-1 pl-2 border-l-2 border-blue-300">
+                                        <li><span class="font-bold text-blue-700">赛前：</span>T-90分钟(高渗扩容)、T-15分钟(血糖激活)</li>
+                                        <li><span class="font-bold text-blue-700">赛中：</span>精确到公里数(KM5, KM7.5...)，结合上下坡地形给出盐丸、水、能量胶配比操作。</li>
+                                        <li><span class="font-bold text-blue-700">赛后：</span>T+0~2h(代谢窗口期)、T+2~24h(炎症抑制期)饮食建议。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="bg-emerald-600 text-white px-4 py-2 font-bold flex justify-between items-center">
+                                <span>Tab 2：AI 跑姿分析</span>
+                                <span class="text-xs bg-emerald-800 px-2 py-1 rounded">基于展位机器检测</span>
+                            </div>
+                            <div class="p-4 space-y-3">
+                                <div class="text-sm border-b border-slate-100 pb-2">
+                                    <strong class="text-slate-800">定性结论：</strong> 跑者类型判定（如：B型平衡型）。
+                                </div>
+                                <div class="text-sm border-b border-slate-100 pb-2">
+                                    <strong class="text-slate-800">底层数据：</strong> 底盘触地压力分布可视化（左右脚前后掌受力百分比）。
+                                </div>
+                                <div class="text-sm border-b border-slate-100 pb-2">
+                                    <strong class="text-slate-800">动力链发力评估：</strong> 从上至下（脊柱、头颈、颈胸、底盘）的代偿问题排查。
+                                </div>
+                                <div class="bg-emerald-50 p-3 rounded text-sm relative">
+                                    <strong class="text-emerald-900 block mb-1">🛡️ 战术锦囊 (带医疗免责声明)</strong>
+                                    <ul class="text-slate-700 space-y-1 pl-2 border-l-2 border-emerald-300">
+                                        <li>针对体征给出：赛前准备(装备减震)、赛中牢记(防撞墙口诀/步频)、赛后物理恢复操作。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="red-lines" class="bg-red-50 border-2 border-red-200 rounded-xl p-6 sm:p-8 mt-8">
+            <h2 class="text-2xl font-bold text-red-800 mb-4 flex items-center gap-2">
+                <span>🚨</span> 现场执行红线备忘录 (SOP Checklist)
+            </h2>
+            <p class="text-red-700 mb-6">以下三条为现场执行的绝对红线，违反将直接导致账务混乱或严重客诉，请全体督导人员随时检查抽检。</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-lg border border-red-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-2">1. 财务红线原则</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">绝不能对“未预约用户”执行任何退款操作。收银区需严格依赖迎宾区发放的“VIP标识”或后台预约核销码进行判定。</p>
+                </div>
+                
+                <div class="bg-white p-5 rounded-lg border border-red-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-2">2. 防客诉话术规范</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">在【AI专区】<strong>严禁使用</strong>“检测免费，拿报告交钱”的诱导式表述。必须统一口径为购买赛事包解锁报告。</p>
+                </div>
+                
+                <div class="bg-white p-5 rounded-lg border border-red-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-2">3. 实体物料防漏发</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">“汗液检测贴纸”极易与“汗液检测线上服务”混淆导致漏发。必须清楚贴纸属于<strong>实体物料</strong>，需当面塞入背包中。</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Zone SOP Nav Logic ---
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contents = document.querySelectorAll('.zone-content');
+
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetZone = btn.getAttribute('data-zone');
+                    
+                    navButtons.forEach(b => {
+                        b.classList.remove('active', 'bg-blue-600', 'text-white', 'border-blue-600');
+                        b.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+                    });
+                    
+                    btn.classList.add('active', 'bg-blue-600', 'text-white', 'border-blue-600');
+                    btn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+
+                    contents.forEach(content => {
+                        if (content.id === `content-${targetZone}`) {
+                            content.classList.remove('hidden');
+                            content.classList.add('block');
+                        } else {
+                            content.classList.remove('block');
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // --- User Journey Comparison Logic ---
+            const btnA = document.getElementById('btn-journey-a');
+            const btnB = document.getElementById('btn-journey-b');
+            const journeyA = document.getElementById('journey-a');
+            const journeyB = document.getElementById('journey-b');
+
+            btnA.addEventListener('click', () => {
+                btnA.className = 'px-6 py-2 rounded-md bg-white shadow-sm text-blue-700 font-bold text-sm transition-colors';
+                btnB.className = 'px-6 py-2 rounded-md text-slate-500 font-bold text-sm hover:text-slate-700 transition-colors';
+                journeyA.classList.remove('hidden');
+                journeyA.classList.add('flex');
+                journeyB.classList.add('hidden');
+                journeyB.classList.remove('flex');
+            });
+
+            btnB.addEventListener('click', () => {
+                btnB.className = 'px-6 py-2 rounded-md bg-white shadow-sm text-blue-700 font-bold text-sm transition-colors';
+                btnA.className = 'px-6 py-2 rounded-md text-slate-500 font-bold text-sm hover:text-slate-700 transition-colors';
+                journeyB.classList.remove('hidden');
+                journeyB.classList.add('flex');
+                journeyA.classList.add('hidden');
+                journeyA.classList.remove('flex');
+            });
+
+            // --- C-End Flow Nav Logic (NEW) ---
+            const cStepButtons = document.querySelectorAll('.c-step-btn');
+            const cStepContents = document.querySelectorAll('.c-step-content');
+
+            cStepButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetStep = btn.getAttribute('data-cstep');
+                    
+                    cStepButtons.forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    
+                    btn.classList.add('active');
+
+                    cStepContents.forEach(content => {
+                        if (content.id === `c-content-${targetStep}`) {
+                            content.classList.remove('hidden');
+                            content.classList.add('block');
+                        } else {
+                            content.classList.remove('block');
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // --- Charts Initialization ---
+            const packageCtx = document.getElementById('packageChart').getContext('2d');
+            new Chart(packageCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['实体物料 (背包/冰箱贴/补剂/贴纸)', '虚拟权益 (报告/会员卡/影像/搭子)'],
+                    datasets: [{
+                        data: [4, 5],
+                        backgroundColor: ['#10b981', '#3b82f6'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: function(context) { return context.label + ': ' + context.raw + ' 项'; } } }
+                    }
+                }
+            });
+
+            const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+            new Chart(trafficCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['预约用户 (上限100人)', '未预约自然转化预估'],
+                    datasets: [{
+                        data: [100, 400],
+                        backgroundColor: ['#f59e0b', '#64748b'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: function(context) { return context.label + ': ' + context.raw + ' 人'; } } }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
